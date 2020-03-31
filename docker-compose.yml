@@ -3,6 +3,7 @@ version: '3.2'
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.4.1
+    container_name: elasticsearch
     volumes:
       - type: bind
         source: ./elasticsearch/config/elasticsearch.yml
@@ -19,8 +20,10 @@ services:
     networks:
       - elk
 
+
   logstash:
     image: mobymax/logstash-mobymax:v1
+    container_name: logstash
     volumes:
       - type: bind
         source: ./logstash/config/logstash.yml
@@ -40,8 +43,10 @@ services:
     depends_on:
       - elasticsearch
 
-  kibana:
+
+ kibana:
     image: docker.elastic.co/kibana/kibana:7.4.1
+    container_name: kibana
     volumes:
       - type: bind
         source: ./kibana/config/kibana.yml
@@ -53,6 +58,21 @@ services:
       - elk
     depends_on:
       - elasticsearch
+
+
+  filebeat:
+    image: "docker.elastic.co/beats/filebeat:7.2.0"
+    container_name: filebeat
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - elk
+    depends_on:
+      - logstash
+
 
 networks:
   elk:
